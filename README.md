@@ -1,15 +1,15 @@
 # Pre-requisites
 1. Docker
 2. `install.package(plumber)`
+2. `install.package(testthat)`
 
 # Project structure
 
-## Boilerplate for the API
+The root codes file for the API is R/app.R, we define the other files we want to load there. 
 
-The root file for the API is R/app.R, we define the other files we want to load there. 
+The root folder for test files is tests/testthat. It has a naming convention: test-your_file_name.R
 
 in anotherTest.R
-
 ```
 #' @post /sum
 addTwo <- function(a, b){
@@ -31,4 +31,4 @@ To try it you can: `curl --data '{"a":4, "b":5}' http://localhost:8000/calculati
 # How to
 Docker build: `docker build .`
 Run the app: `Rscript R/app.R` 
-
+Run the test: From R console, you can run `testthat::test_dir("tests/testthat")`, assuming your working directory in the root folder of the project.
