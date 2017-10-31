@@ -3,8 +3,6 @@
 language: R
 sudo: false
 cache: packages
-r_packages:
-	- testthat
 script: Rscript -e 'testthat::test_dir("tests/testthat")'
 notifications:
 	email:
