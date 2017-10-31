@@ -1,0 +1,19 @@
+Package: finalproject
+Version: 0.0.0.9000
+Title: Optimizing Portfolio Based on Various Financial Indicators Using Data Science
+Description: We intend to use the power of data science to democratize investment advice and thereby create opportunities for less affluent people to invest prudentially in stock market. 
+Authors@R: c(
+		person("Saraf", "Agrima", , "saraf.ag@husky.neu.edu", c("aut")),
+		person("Anak Agung Ngurah Bagus", "Trihatmaja", , "trihatmaja.a@husky.neu.edu", role = c("aut", "cre")),
+		person("Shah", "Chaitya", , "shah.cha@husky.neu.edu", role = c("aut")),
+		person("Shafi Ahmed", "Omair", , "www.omair.com@gmail.com", role = c("aut"))
+	    )
+URL: https://github.com/prdx/DS5110-final-project
+BugReports: https://github.com/prdx/DS5110-final-project/issues
+Depends: 
+	R (>= 3.1)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat
