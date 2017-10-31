@@ -1,3 +1,5 @@
+[![Travis build status](https://travis-ci.com/prdx/DS5110-final-project.svg?branch=master)](https://travis-ci.com/prdx/DS5110-final-project)
+
 # Pre-requisites
 1. Docker
 2. `install.package(plumber)`
