@@ -3,5 +3,5 @@ sudo: false
 cache: packages
 script: Rscript -e 'testthat::test_dir("tests/testthat")'
 notifications:
-	email:
-		- trihatmaja.a@husky.neu.edu
+    email:
+      - trihatmaja.a@husky.neu.edu
