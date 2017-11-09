@@ -1,0 +1,83 @@
+---
+title: "regression"
+author: "Anak Agung Ngurah Bagus Trihatmaja"
+date: "11/8/2017"
+output: html_document
+---
+```{r import}
+library(tidyverse)
+```
+
+```{r fundamentals, include=FALSE}
+
+
+# Load fundamental data
+fundamentals <- read_csv("fundamentals.csv")
+
+# Select only necessary variables
+fundamentals <- select(
+  fundamentals,
+  `Ticker Symbol`,
+  `For Year`,
+  `Accounts Receivable`,
+  `After Tax ROE`,
+  `Capital Surplus`,
+  `Cash and Cash Equivalents`,
+  `Deferred Asset Charges`,
+  `Effect of Exchange Rate`,
+  `Goodwill`,
+  `Gross Margin`,
+  `Intangible Assets`,
+  `Interest Expense`,
+  `Inventory`,
+  `Investments`,
+  `Liabilities`,
+  `Long-Term Investments`,
+  `Net Borrowings`,
+  `Net Cash Flow`,
+  `Net Cash Flows-Financing`,
+  `Net Income`,
+  `Net Income Adjustments`,
+  `Non-Recurring Items`,
+  `Other Assets`,
+  `Other Current Assets`,
+  `Other Current Liabilities`,
+  `Other Equity`,
+  `Other Financing Activities`,
+  `Other Investing Activities`,
+  `Other Operating Activities`,
+  `Other Operating Items`,
+  `Pre-Tax ROE`,
+  `Profit Margin`,
+  `Quick Ratio`,
+  `Research and Development`,
+  `Retained Earnings`,
+  `Sale and Purchase of Stock`,
+  `Short-Term Debt / Current Portion of Long-Term Debt`,
+  `Short-Term Investments`,
+  `Total Assets`,
+  `Total Current Assets`,
+  `Total Liabilities & Equity`,
+  `Total Revenue`
+  )
+
+# Filter invalid data
+fundamentals <- filter(
+  fundamentals,
+  `For Year` != 1215
+  )
+
+# There are negative value in some variables, we will turn that into positive
+# It does not mean anything bad accounting-wise, it is just how they show it
+fundamentals <- mutate(fundamentals,
+                     `Accounts Receivable` = abs(`Accounts Receivable`)
+
+)
+
+```
+
+```{r prices}
+# Load prices data
+prices <- read_csv("prices.csv")
+```
+
