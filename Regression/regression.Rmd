@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r import}
 library(tidyverse)
+library(modelr)
 ```
 
 ```{r fundamentals, include=FALSE}
@@ -19,59 +20,34 @@ fundamentals <- select(
   fundamentals,
   `Ticker Symbol`,
   `For Year`,
-  `Accounts Receivable`,
-  `After Tax ROE`,
-  `Capital Surplus`,
-  `Cash and Cash Equivalents`,
-  `Deferred Asset Charges`,
-  `Effect of Exchange Rate`,
-  `Goodwill`,
-  `Gross Margin`,
-  `Intangible Assets`,
-  `Interest Expense`,
-  `Inventory`,
-  `Investments`,
-  `Liabilities`,
-  `Long-Term Investments`,
-  `Net Borrowings`,
-  `Net Cash Flow`,
-  `Net Cash Flows-Financing`,
-  `Net Income`,
-  `Net Income Adjustments`,
-  `Non-Recurring Items`,
-  `Other Assets`,
-  `Other Current Assets`,
-  `Other Current Liabilities`,
-  `Other Equity`,
-  `Other Financing Activities`,
-  `Other Investing Activities`,
-  `Other Operating Activities`,
-  `Other Operating Items`,
-  `Pre-Tax ROE`,
-  `Profit Margin`,
-  `Quick Ratio`,
-  `Research and Development`,
-  `Retained Earnings`,
-  `Sale and Purchase of Stock`,
-  `Short-Term Debt / Current Portion of Long-Term Debt`,
-  `Short-Term Investments`,
   `Total Assets`,
-  `Total Current Assets`,
-  `Total Liabilities & Equity`,
-  `Total Revenue`
+  `Intangible Assets`,
+  `Liabilities`,
+  `Earnings Per Share`,
+  `Total Revenue`,
+  `Current Ratio`,
+  `Quick Ratio`,
+  `Profit Margin`,
+  `Operating Margin`,
+  `Total Liabilities`,
+  `Total Equity`,
+  `Retained Earnings`,
+  `Gross Margin`,
+  `Estimated Shares Outstanding`
   )
 
 # Filter invalid data
-fundamentals <- filter(
+fundamentals_2015 <- filter(
   fundamentals,
-  `For Year` != 1215
+  `For Year` != 1215,
+  `For Year` < 2016
   )
 
-# There are negative value in some variables, we will turn that into positive
-# It does not mean anything bad accounting-wise, it is just how they show it
-fundamentals <- mutate(fundamentals,
-                     `Accounts Receivable` = abs(`Accounts Receivable`)
-
+# Mutate the data to get a new predictors
+fundamentals_2015 <- mutate(fundamentals_2015,
+  `Book Value` = `Total Assets` - (`Intangible Assets` + `Liabilities`),
+  `Asset Turnover` = `Total Revenue` / `Total Assets`,
+  `Total Debt To Equity` = `Total Liabilities` / `Total Equity`
 )
 
 ```
@@ -79,5 +55,92 @@ fundamentals <- mutate(fundamentals,
 ```{r prices}
 # Load prices data
 prices <- read_csv("prices.csv")
+
+# Find the average prices
+prices_per_year <- prices %>%
+  mutate(date = as.numeric(format(date, "%Y"))) %>%
+  group_by(date, symbol) %>%
+  summarise(avg_open = mean(open, na.rm=TRUE), avg_close = mean(close, na.rm=TRUE))
+```
+
+```{r fundamental_and_prices}
+# Left join with prices
+fundamental_and_prices <- fundamentals_2015 %>%
+  left_join(prices_per_year, by=c("For Year"="date", "Ticker Symbol"="symbol"))
+
+# Creae
+fit <- lm(avg_close ~ `Book Value` +
+`Earnings Per Share` +
+`Total Revenue` +
+`Current Ratio` +
+`Quick Ratio` +
+`Profit Margin` +
+`Operating Margin` +
+`Asset Turnover` +
+`Total Debt To Equity` +
+`Retained Earnings` +
+`Gross Margin`, data = fundamental_and_prices, na.action=na.omit)
+
+summary(fit)
+
+# Filter the PR value that is more than 0.05 (5%)
+
+fit2 <- lm(avg_close ~ `Book Value` +
+`Earnings Per Share` +
+`Profit Margin` +
+`Operating Margin` +
+`Total Debt To Equity`, data = fundamental_and_prices, na.action=na.omit)
+
+summary(fit2)
+
+kfoldCv <- function(formula, data, folds = 0) {
+  # Error handling
+  if(!inherits(formula, "formula")) {
+    stop("Not a formula")
+  }
+  
+  # Convert to tibble
+  data <- as.tibble(data)
+  set.seed(1)
+  
+  message("Partitioning the data")
+  data_cv <- crossv_kfold(data, folds)
+  
+  message("Fitting models for cross-validation on training sets")
+  data_cv <- data_cv %>%
+    mutate(fit  = map(train, ~ lm(formula, data = ., na.action=na.omit)))
+  
+  message("Getting the cross-validated prediction errors")
+  data_cv <- data_cv %>%
+    mutate(rmse_train = map2_dbl(fit, train, ~ rmse(.x, .y)),
+    rmse_test = map2_dbl(fit, test, ~ rmse(.x, .y)))
+  
+  mean(data_cv$rmse_test)
+}
+
+model1 <- kfoldCv(
+  avg_close ~ `Book Value` +
+  `Earnings Per Share` +
+  `Total Revenue` +
+  `Current Ratio` +
+  `Quick Ratio` +
+  `Profit Margin` +
+  `Operating Margin` +
+  `Asset Turnover` +
+  `Total Debt To Equity` +
+  `Retained Earnings` +
+  `Gross Margin`,
+  fundamental_and_prices,
+  folds = 10
+  )
+model2 <- kfoldCv(
+  avg_close ~ `Book Value` +
+  `Earnings Per Share` +
+  `Profit Margin` +
+  `Operating Margin` +
+  `Total Debt To Equity`,
+  fundamental_and_prices,
+  folds = 10
+  )
 ```
 
