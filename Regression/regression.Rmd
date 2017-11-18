@@ -144,3 +144,17 @@ model2 <- kfoldCv(
   )
 ```
 
+```{r fundamental_prices_and_companyname}
+# Some company has moved from NYSE to NASDAQ
+# We need to combine both list in a single file
+# It reduces the unmatched data to 10
+# We check the the unmatched data using antijoin
+# These 10 data, we need to include manually
+# These data is missing because we the company is either acquisitioned by 
+# another company or change the company name.
+companylist <- read_csv("companylist.csv")
+
+# Join both tables
+fundamental_and_prices <- fundamental_and_prices %>%
+left_join(companylist, by=c("Ticker Symbol"="Symbol"))
+```
