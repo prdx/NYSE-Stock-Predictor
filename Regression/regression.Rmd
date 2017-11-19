@@ -56,17 +56,21 @@ fundamentals_2015 <- mutate(fundamentals_2015,
 # Load prices data
 prices <- read_csv("prices.csv")
 
-# Find the average prices
+## Capture first day of April of each company per year
 prices_per_year <- prices %>%
-  mutate(date = as.numeric(format(date, "%Y"))) %>%
-  group_by(date, symbol) %>%
-  summarise(avg_open = mean(open, na.rm=TRUE), avg_close = mean(close, na.rm=TRUE))
+  mutate(year = as.numeric(format(date, "%Y"))) %>%
+  mutate(month = format(date, "%m")) %>%
+  filter(month == "04") %>%
+  group_by(year, month, symbol) %>%
+  arrange(date) %>%
+  filter(row_number()==1) %>%
+  mutate(date = as.numeric(format(date, "%Y")))
 ```
 
 ```{r fundamental_and_prices}
 # Left join with prices
 fundamental_and_prices <- fundamentals_2015 %>%
-  left_join(prices_per_year, by=c("For Year"="date", "Ticker Symbol"="symbol"))
+  left_join(prices_per_year, by=c("For Year"="year", "Ticker Symbol"="symbol"))
 
 # Creae
 fit <- lm(avg_close ~ `Book Value` +
