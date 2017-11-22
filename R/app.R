@@ -1,16 +1,15 @@
 library("plumber")
+library("readr")
+source("R/companies.R")
+
+path <- "data/"
+fundamental_and_prices <<- read_csv(
+  paste(path, "fundamental_and_prices.csv", sep = ""))
 
 app <- plumber$new()
 
-# Define the routing for each files
-test <- plumber$new("test.R")
-
-# Endpoint /hello
-app$mount("/hello", test)
-
-# Endpoint /calculations
-another_test <- plumber$new("anotherTest.R")
-app$mount("/calculations", another_test)
-
+# Endpoint /companies
+companies <- plumber$new("R/companies.R")
+app$mount("/companies", companies)
 
 app$run(port=8000)
