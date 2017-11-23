@@ -1,0 +1,74 @@
+library("readr")
+library("dplyr")
+
+# This function will prepare the data needed for getting the information
+prepareCompanyInfo <- function(data) {
+  companies <- data %>%
+    rename(
+      ticker_symbol = `Ticker Symbol`,
+      name = `Name`,
+      sector = `Sector`,
+      industry = `Industry`
+    ) %>%
+    distinct(ticker_symbol, name, sector, industry)
+  
+  companies
+}
+
+# Here is where the data tidying process begins
+companies <- prepareCompanyInfo(fundamental_and_prices)
+
+# Get list of all companies
+#' @get /all
+#' @json
+getAllCompanyInfo <- function() {
+  companies
+}
+
+# Get list of all companies by name
+#' @post /name
+#' @json
+getCompanyByName <- function(companyName) {
+  companies %>%
+    filter(name == companyName)
+}
+
+# Get list of all companies by ticker symbol
+#' @post /ticker
+#' @json
+getCompanyByTicker <- function(tickerSymbol) {
+  companies %>%
+    filter(ticker_symbol == paste(tickerSymbol))
+}
+
+# Get list of all companies by sector
+#' @post /sector
+#' @json
+getCompanyBySector <- function(sector) {
+  companies %>%
+    filter(sector == paste(sector))
+}
+
+# Get list of available companies
+#' @get /name
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(name)
+}
+
+# Get list of available companies ticker symbol
+#' @get /ticker
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(ticker_symbol)
+}
+
+# Get list of available companies sector
+#' @get /sector
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(sector)
+}

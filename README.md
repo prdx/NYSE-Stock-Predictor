@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.com/prdx/DS5110-final-project.svg?branch=master)](https://travis-ci.com/prdx/DS5110-final-project)
+[![Build Status](https://travis-ci.com/prdx/DS5110-final-project.svg?token=Bku4c8XtGXoto53hwmYA&branch=master)](https://travis-ci.com/prdx/DS5110-final-project)
 
 # Pre-requisites
 1. Docker
