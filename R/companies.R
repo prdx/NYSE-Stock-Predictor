@@ -15,6 +15,7 @@ prepareCompanyInfo <- function(data) {
   companies
 }
 
+# Here is where the data tidying process begins
 companies <- prepareCompanyInfo(fundamental_and_prices)
 
 # Get list of all companies
@@ -46,4 +47,28 @@ getCompanyByTicker <- function(tickerSymbol) {
 getCompanyBySector <- function(sector) {
   companies %>%
     filter(sector == paste(sector))
+}
+
+# Get list of available companies
+#' @get /name
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(name)
+}
+
+# Get list of available companies ticker symbol
+#' @get /ticker
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(ticker_symbol)
+}
+
+# Get list of available companies sector
+#' @get /sector
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(sector)
 }
