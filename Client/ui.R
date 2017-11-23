@@ -13,9 +13,6 @@ inputMethods <- c("Ticker", "Name", "Sector")
 # tmp2 <- levels(factor(tmp$Sector))
 # sector_list <- tmp2
 
-# TODO
-# make a list of companies belonging to each sector
-
 sectors_list <- getSectorList()
 
 # ui method
@@ -42,6 +39,7 @@ ui <- fluidPage(
     tableOutput("sector") )
       #TODO
       #display a table of list of companies for a selected sector
+    #check pagination
   )))
   
 server <- function(input, output) { output$datatable <- renderTable({
