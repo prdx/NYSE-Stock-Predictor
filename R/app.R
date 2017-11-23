@@ -1,16 +1,21 @@
 library("plumber")
+library("readr")
 
+# Load the data first, and make it global variable
+path <- "data/"
+fundamental_and_prices <<- read_csv(
+  paste(path, "fundamental_and_prices.csv", sep = ""))
+
+# When we run the script, it will also run tidy the fundamental_and_prices.
+# That is why we put the fundamental_and_prices above
+source("R/companies.R")
+
+# Create an empty plumber instance
 app <- plumber$new()
 
-# Define the routing for each files
-test <- plumber$new("test.R")
-
-# Endpoint /hello
-app$mount("/hello", test)
-
-# Endpoint /calculations
-another_test <- plumber$new("anotherTest.R")
-app$mount("/calculations", another_test)
-
+# For every endpoint add the file we want to mount
+# Endpoint /companies
+companies <- plumber$new("R/companies.R")
+app$mount("/companies", companies)
 
 app$run(port=8000)
