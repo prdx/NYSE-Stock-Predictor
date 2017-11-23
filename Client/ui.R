@@ -1,5 +1,6 @@
 # load required libraries
 library(shiny)
+source("Client/api.R")
 
 server0 <- function(input, output) {} 
 
@@ -14,6 +15,8 @@ inputMethods <- c("Ticker", "Name", "Sector")
 
 # TODO
 # make a list of companies belonging to each sector
+
+sectors_list <- getSectorList()
 
 # ui method
 ui <- fluidPage(
@@ -33,7 +36,9 @@ ui <- fluidPage(
   fluidRow(column(12, conditionalPanel(
     condition = "input.inputMethod == 'Sector'",
     selectInput("sector",
-                "Select a sector:", choices=sector_list, selected="Energy"),
+                "Select a sector:",
+                choices=sectors_list,
+                selected=sectors_list[[1]]),
     tableOutput("datatable") )
   )))
   
