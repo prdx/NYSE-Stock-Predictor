@@ -39,15 +39,16 @@ ui <- fluidPage(
                 "Select a sector:",
                 choices=sectors_list,
                 selected=sectors_list[[1]]),
-    tableOutput("datatable") )
+    tableOutput("sector") )
+      #TODO
+      #display a table of list of companies for a selected sector
   )))
   
 server <- function(input, output) { output$datatable <- renderTable({
-  pos <- which(search() == "Energy")
-  get(input$sector, pos=pos) })
-}  
-  
+  #pos <- which(search() == "Energy")
+  #get(input$sector) 
+  getCompanyBySector(input$sector)
+})
+}    
 
 runApp(list(ui=ui, server=server))
-
-
