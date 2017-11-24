@@ -51,9 +51,8 @@ server <- function(input, output) {
   # We need to wait until user click the submit button before sending any 
   # data to server
   data <- eventReactive(input$submit, {
-    # Store what to display
-    # If user submit the sidebar, we will display the table
-    params$mainPanelDisplay <- "table"
+    # We will observe which input method is checked on the radio button
+    # and then call the responsible function for each input method
     switch(
       input$inputMethod,
       Sector = postSector(input$sectorDropdown),
@@ -62,16 +61,23 @@ server <- function(input, output) {
       )
   })
   
+  observeEvent(input$submit, {
+    # Store what to display
+    # If user submit the sidebar, we will display the table in the main 
+    # panel
+    params$mainPanelDisplay <- "table"
+  })
+  
   observeEvent(input$tickerLink,{
     # Store what to display
-    # If user click the ticker link, we will display the detail
+    # If user click the ticker link, we will display the detail in the main 
+    # panel
     params$mainPanelDisplay <- "detail"
   })
   
-  # Dynamically render the main panel
+  # Here we are determine the logic when rendering main panel
   output$main <- renderUI({
     if (params$mainPanelDisplay == 'table') {
-      # We don't escape HTML that we embed to the data frame in helper.R
       output$table <- renderDataTable({
         data()
       }, escape = FALSE)
@@ -83,7 +89,6 @@ server <- function(input, output) {
   })
   
   output$clickedTickerText <- renderText({params$mainPanelDisplay})
-  
 }    
 
 runApp(list(ui=ui, server=server))
