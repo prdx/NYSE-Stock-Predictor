@@ -1,3 +1,6 @@
+# API file:
+# This file contains all of the functions that connects to an external API
+
 library(httr)
 library(jsonlite)
 
@@ -17,7 +20,8 @@ getSectorList <- function() {
 # POST /companies/name
 postName <- function(name) {
   endpoint <- '/companies/name'
-  raw.result <- POST(url = paste(host, endpoint, sep = ""), body = paste("companyName=", name, sep=""))
+  raw.result <- POST(url = paste(host, endpoint, sep = ""),
+                     body = paste("companyName=", name, sep=""))
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
@@ -29,7 +33,8 @@ postName <- function(name) {
 # POST /companies/ticker
 postTicker <- function(ticker) {
   endpoint <- '/companies/ticker'
-  raw.result <- POST(url = paste(host, endpoint, sep = ""), body = paste("tickerSymbol=", ticker, sep=""))
+  raw.result <- POST(url = paste(host, endpoint, sep = ""),
+                     body = paste("tickerSymbol=", ticker, sep=""))
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
@@ -41,7 +46,8 @@ postTicker <- function(ticker) {
 # POST /companies/sector
 postSector <- function(sector) {
   endpoint <- '/companies/sector'
-  raw.result <- POST(url = paste(host, endpoint, sep = ""), body = paste("sectorName=", sector, sep=""))
+  raw.result <- POST(url = paste(host, endpoint, sep = ""),
+                     body = paste("sectorName=", sector, sep=""))
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
