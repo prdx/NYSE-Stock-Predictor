@@ -18,35 +18,38 @@ ui <- fluidPage(
                     }
                   </script>
                   "))),
-  sidebarPanel(
-    fluidRow(column(12,  radioButtons("inputMethod", "", 
-                                      choices=inputMethods, 
-                                      selected=inputMethods[1])
-    )),
-    fluidRow(column(12, conditionalPanel(
-      condition = "input.inputMethod == 'Ticker'",
-      textInput("tickerText", "Ticker Symbol", value="")
-    ))),
-    fluidRow(column(12, conditionalPanel(
-      condition = "input.inputMethod == 'Name'",
-      textInput("nameText", "Company Name", value="")
-    ))),
-    fluidRow(column(12, conditionalPanel(
+  sidebarPanel(fluidRow(column(
+    12,
+    radioButtons("inputMethod", "",
+                 choices = inputMethods,
+                 selected = inputMethods[1])
+  )),
+  fluidRow(column(
+    12,
+    conditionalPanel(condition = "input.inputMethod == 'Ticker'",
+                     textInput("tickerText", "Ticker Symbol", value = ""))
+  )),
+  fluidRow(column(
+    12,
+    conditionalPanel(condition = "input.inputMethod == 'Name'",
+                     textInput("nameText", "Company Name", value = ""))
+  )),
+  fluidRow(column(
+    12,
+    conditionalPanel(
       condition = "input.inputMethod == 'Sector'",
       selectInput("sectorDropdown",
                   "Select a sector:",
-                  choices=sectors_list)),
+                  choices = sectors_list)
+    ),
     actionButton("submit", "Submit")
   ))),
-  mainPanel(
-    wellPanel(
-      uiOutput("main")
-    )
-    ))
+  mainPanel(wellPanel(uiOutput("main")))
+)
   
 server <- function(input, output) { 
-  # Create new reactiveValues storage
-  params <- reactiveValues(mainPanelDisplay = 'table')
+  # Create new server-side reactiveValues storage
+  params <- reactiveValues(mainPanelDisplay = 'table', companyDetails = list())
   
   # We need to wait until user click the submit button before sending any 
   # data to server
@@ -68,11 +71,12 @@ server <- function(input, output) {
     params$mainPanelDisplay <- "table"
   })
   
-  observeEvent(input$tickerLink,{
+  observeEvent(input$tickerLink, {
     # Store what to display
     # If user click the ticker link, we will display the detail in the main 
     # panel
     params$mainPanelDisplay <- "detail"
+    params$companyDetails <- postDetails(input$tickerLink)
   })
   
   # Here we are determine the logic when rendering main panel
@@ -84,11 +88,17 @@ server <- function(input, output) {
       dataTableOutput("table")
     }
     else {
-      textOutput("clickedTickerText")
+      htmlOutput("companyDetailsText")
     }
   })
   
-  output$clickedTickerText <- renderText({params$mainPanelDisplay})
+  output$companyDetailsText <- renderUI({
+    HTML(paste("<p><b>Ticker Symbol:</b> ", params$companyDetails[["Ticker Symbol"]], "</p>",
+               "<p><b>Company name:</b> ", params$companyDetails[["Company Name"]], "</p>",
+               "<p><b>Sector:</b> ", params$companyDetails[["Sector"]], "</p>",
+               "<p><b>Industry:</b> ", params$companyDetails[["Sector"]], "</p>"
+               ))
+    })
 }    
 
 runApp(list(ui=ui, server=server))

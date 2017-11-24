@@ -28,3 +28,9 @@ changeHeaderName <- function(data) {
       `Industry` = industry
       )
 }
+
+# Make distinct
+makeDistinct <- function(data) {
+  data %>%
+    distinct(ticker_symbol, name, sector, industry)
+}
