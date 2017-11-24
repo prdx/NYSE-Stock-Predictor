@@ -6,13 +6,13 @@ library(dplyr)
 
 # This function will replace the ticker_symbol data with a link
 changeTickerIntoLink <- function(data) {
-  host <- "http://127.0.0.1:7311"
+  host <- "#"
   data %>%
     mutate(
       ticker_symbol = paste0(
         "<a id='link_",
         ticker_symbol,
-        "' href='",
+        "' onClick='tickerClicked(this.id)' class='ticker-symbol' href='",
         host,"'>",
         ticker_symbol,"</a>"
         ))
