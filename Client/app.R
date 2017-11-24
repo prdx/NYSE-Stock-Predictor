@@ -6,6 +6,7 @@ source("Client/api.R")
 inputMethods <- c("Ticker", "Name", "Sector")
 sectors_list <- getSectorList()
 
+
 # Setup the layout
 ui <- fluidPage(
   titlePanel("NYSE Stock Price Predictor"),
@@ -38,23 +39,21 @@ ui <- fluidPage(
     actionButton("submit", "Submit")
   ))),
   mainPanel(
-    conditionalPanel(
-      condition = "params.mainPanelDisplay == 'table'",
-      dataTableOutput("table")
-    ),
-    conditionalPanel(
-      condition = "params.mainPanelDisplay == 'detail'",
-      textOutput("clickedTickerText")
+    wellPanel(
+      uiOutput("main")
     )
     ))
   
 server <- function(input, output) { 
   # Create new reactiveValues storage
-  params <- reactiveValues(mainPanelDisplay = NULL)
+  params <- reactiveValues(mainPanelDisplay = 'table')
   
   # We need to wait until user click the submit button before sending any 
   # data to server
   data <- eventReactive(input$submit, {
+    # Store what to display
+    # If user submit the sidebar, we will display the table
+    params$mainPanelDisplay <- "table"
     switch(
       input$inputMethod,
       Sector = postSector(input$sectorDropdown),
@@ -69,15 +68,22 @@ server <- function(input, output) {
     params$mainPanelDisplay <- "detail"
   })
   
+  # Dynamically render the main panel
+  output$main <- renderUI({
+    if (params$mainPanelDisplay == 'table') {
+      # We don't escape HTML that we embed to the data frame in helper.R
+      output$table <- renderDataTable({
+        data()
+      }, escape = FALSE)
+      dataTableOutput("table")
+    }
+    else {
+      textOutput("clickedTickerText")
+    }
+  })
+  
   output$clickedTickerText <- renderText({params$mainPanelDisplay})
   
-  # We don't escape HTML that we embed to the data frame in helper.R
-  output$table <- renderDataTable({
-    # Store what to display
-    # If user submit the sidebar, we will display the table
-    params$mainPanelDisplay <- "table"
-    data()
-  }, escape = FALSE)
 }    
 
 runApp(list(ui=ui, server=server))
