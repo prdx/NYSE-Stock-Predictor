@@ -44,9 +44,9 @@ getCompanyByTicker <- function(tickerSymbol) {
 # Get list of all companies by sector
 #' @post /sector
 #' @json
-getCompanyBySector <- function(sector) {
+getCompanyBySector <- function(sectorName) {
   companies %>%
-    filter(sector == paste(sector))
+    filter(sector == paste(sectorName))
 }
 
 # Get list of available companies
