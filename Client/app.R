@@ -28,7 +28,7 @@ ui <- fluidPage(
                   choices=sectors_list)),
     actionButton("submit", "Submit")
   ))),
-  mainPanel(tableOutput("table")))
+  mainPanel(dataTableOutput("table")))
   
 server <- function(input, output) { 
   data <- eventReactive(input$submit, {
@@ -40,9 +40,9 @@ server <- function(input, output) {
       )
   })
   
-  output$table <- renderTable({
+  output$table <- renderDataTable({
     data()
-  })
+  }, escape = FALSE)
 }    
 
 runApp(list(ui=ui, server=server))

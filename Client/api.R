@@ -1,6 +1,8 @@
 library(httr)
 library(jsonlite)
 
+source("Client/helper.R")
+
 host <- 'http://localhost:8000'
 
 # GET /companies/sector
@@ -19,7 +21,9 @@ postName <- function(name) {
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
-  as.list(this.content)
+  changeHeaderName(
+    changeTickerIntoLink(this.content)
+  )
 }
 
 # POST /companies/ticker
@@ -29,7 +33,9 @@ postTicker <- function(ticker) {
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
-  as.list(this.content)
+  changeHeaderName(
+    changeTickerIntoLink(this.content)
+  )
 }
 
 # POST /companies/sector
@@ -39,6 +45,7 @@ postSector <- function(sector) {
   
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
-  as.list(this.content)
+  changeHeaderName(
+    changeTickerIntoLink(this.content)
+  )
 }
-
