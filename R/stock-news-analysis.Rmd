@@ -1,0 +1,120 @@
+---
+title: "Stock News Sentiment Analysis"
+author: "Chaitya Shah"
+date: "11/3/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r install}
+install.packages("tidytext")
+install.packages("tm.plugin.webmining")
+```
+
+```{r load_libs}
+#don't delete any
+library("tidyverse")
+library("devtools")
+library("tm")
+library("SnowballC")
+# library("wordcloud")
+library("sentiment")
+library("tidytext")
+library("purrr")
+library("stringr")
+library("tm.plugin.webmining")
+```
+
+```{r stocknews}
+#read reddit news data
+reddit_news = read.csv("/Users/Chaitya/fall17/DS5110/Project/Project/data/stocknews/RedditNews.csv")
+
+reddit <- reddit_news
+```
+
+```{r analyse_news, echo=FALSE}
+
+reddit$Date <- as.character(reddit$Date)
+
+#filter dates
+
+start_date <- "2011-12-01"
+end_date <- "2016-01-01"
+
+reddit <- reddit %>%
+  filter(Date >= start_date & Date <= end_date)
+
+#sort by date
+reddit <- reddit %>%
+  arrange(Date)
+
+#part of data cleaning
+reddit$News <- sapply(reddit$News, function(row) 
+  iconv(row, "latin1", "ASCII", sub=""))
+
+#remove 'b' from all headlines. was there probably because of bold
+
+reddit$News = gsub('b"', '"', reddit$News)
+reddit$News = gsub("b'", "'", reddit$News)
+
+reddit_clean <- reddit
+
+#add id to spread based on date and news.
+#Gives 25 headlines per day
+
+reddit_clean <- reddit_clean %>%
+  group_by(Date) %>%
+  mutate(id=paste0("News_",1:n()))
+
+reddit_clean <- reddit_clean %>%
+  spread(key = "id", value = "News")
+
+#keep first 25 headlines
+reddit_clean <- reddit_clean %>%
+  select(Date, paste0("News_",1:25))
+```
+
+
+```{r package_sentiment}
+
+#package sentiment
+#https://github.com/andrie/sentiment
+
+# example
+# sentiment(c("There is a terrible flaw in this work"))
+
+reddit3 <- data.frame()
+
+reddit2 <- reddit_clean
+
+reddit2$Score_1 <- sentiment(c(reddit2$News_1))
+reddit2$Score_2 <- sentiment(c(reddit2$News_2))
+reddit2$Score_3 <- sentiment(c(reddit2$News_3))
+reddit2$Score_4 <- sentiment(c(reddit2$News_4))
+reddit2$Score_5 <- sentiment(c(reddit2$News_5))
+reddit2$Score_6 <- sentiment(c(reddit2$News_6))
+reddit2$Score_7 <- sentiment(c(reddit2$News_7))
+reddit2$Score_8 <- sentiment(c(reddit2$News_8))
+reddit2$Score_9 <- sentiment(c(reddit2$News_9))
+
+reddit_scores <- reddit2 %>%
+  transmute(Total = sum(Score_1, Score_2, Score_3, Score_4, Score_5, Score_6,
+                        Score_7, Score_8, Score_9, na.rm=TRUE))
+
+# elegant sum not working
+# reddit3 <- reddit2 %>%
+#   select(27:29) %>%
+#   transmute(Total = sum(.[,2:4], na.rm=TRUE))
+
+
+
+# reddit3 <- reddit2 %>%
+#   transmute(Total = rowSums(reddit2[,27:29], na.rm=TRUE))
+
+
+reddit_scores
+```
