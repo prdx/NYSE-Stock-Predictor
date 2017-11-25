@@ -91,6 +91,8 @@ reddit3 <- data.frame()
 
 reddit2 <- reddit_clean
 
+# use loops
+
 reddit2$Score_1 <- sentiment(c(reddit2$News_1))
 reddit2$Score_2 <- sentiment(c(reddit2$News_2))
 reddit2$Score_3 <- sentiment(c(reddit2$News_3))
@@ -101,6 +103,7 @@ reddit2$Score_7 <- sentiment(c(reddit2$News_7))
 reddit2$Score_8 <- sentiment(c(reddit2$News_8))
 reddit2$Score_9 <- sentiment(c(reddit2$News_9))
 
+# make this elegant
 reddit_scores <- reddit2 %>%
   transmute(Total = sum(Score_1, Score_2, Score_3, Score_4, Score_5, Score_6,
                         Score_7, Score_8, Score_9, na.rm=TRUE))
