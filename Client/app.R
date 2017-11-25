@@ -93,10 +93,10 @@ server <- function(input, output) {
   })
   
   output$companyDetailsText <- renderUI({
-    HTML(paste("<p><b>Ticker Symbol:</b> ", params$companyDetails[["Ticker Symbol"]], "</p>",
-               "<p><b>Company name:</b> ", params$companyDetails[["Company Name"]], "</p>",
-               "<p><b>Sector:</b> ", params$companyDetails[["Sector"]], "</p>",
-               "<p><b>Industry:</b> ", params$companyDetails[["Sector"]], "</p>"
+    HTML(paste("<p><b>Ticker Symbol:</b> ", params$companyDetails[["Ticker Symbol"]][[1]], "</p>",
+               "<p><b>Company name:</b> ", params$companyDetails[["Company Name"]][[1]], "</p>",
+               "<p><b>Sector:</b> ", params$companyDetails[["Sector"]][[1]], "</p>",
+               "<p><b>Industry:</b> ", params$companyDetails[["Industry"]][[1]], "</p>"
                ))
     })
 }    
