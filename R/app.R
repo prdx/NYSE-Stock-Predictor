@@ -18,4 +18,4 @@ app <- plumber$new()
 companies <- plumber$new("R/companies.R")
 app$mount("/companies", companies)
 
-app$run(port=8000)
+app$run(host="0.0.0.0", port=8000)
