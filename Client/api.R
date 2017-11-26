@@ -29,6 +29,9 @@ postDetails <- function(tickerLink) {
                      body = paste0("tickerSymbol=", ticker))
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
+  print(as.list(changeHeaderName(
+    this.content
+  )))
   as.list(changeHeaderName(
     this.content
   ))
