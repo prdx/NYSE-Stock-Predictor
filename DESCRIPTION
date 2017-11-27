@@ -17,6 +17,9 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
-    readr
+    readr,
+    tibble,
+    purrr,
+    modelr
 Suggests: 
     testthat

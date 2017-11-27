@@ -1,0 +1,167 @@
+---
+title: "regression"
+author: "Anak Agung Ngurah Bagus Trihatmaja"
+date: "11/8/2017"
+output: html_document
+---
+```{r import}
+library(tidyverse)
+library(modelr)
+```
+
+```{r fundamentals, include=FALSE}
+
+
+# Load fundamental data
+fundamentals <- read_csv("fundamentals.csv")
+
+# Select only necessary variables
+fundamentals <- select(
+  fundamentals,
+  `Ticker Symbol`,
+  `For Year`,
+  `Total Assets`,
+  `Intangible Assets`,
+  `Liabilities`,
+  `Earnings Per Share`,
+  `Total Revenue`,
+  `Current Ratio`,
+  `Quick Ratio`,
+  `Profit Margin`,
+  `Operating Margin`,
+  `Total Liabilities`,
+  `Total Equity`,
+  `Retained Earnings`,
+  `Gross Margin`,
+  `Estimated Shares Outstanding`
+  )
+
+# Filter invalid data
+fundamentals <- filter(
+  fundamentals,
+  `For Year` != 1215
+  )
+
+# Mutate the data to get a new predictors
+fundamentals <- mutate(fundamentals,
+  `Book Value` = `Total Assets` - (`Intangible Assets` + `Liabilities`),
+  `Asset Turnover` = `Total Revenue` / `Total Assets`,
+  `Total Debt To Equity` = `Total Liabilities` / `Total Equity`
+)
+
+```
+
+```{r prices}
+# Load prices data
+prices <- read_csv("prices.csv")
+
+## Capture first day of April of each company per year
+prices_per_year <- prices %>%
+  mutate(year = as.numeric(format(date, "%Y"))) %>%
+  mutate(month = format(date, "%m")) %>%
+  filter(month == "04") %>%
+  group_by(year, month, symbol) %>%
+  arrange(date) %>%
+  filter(row_number()==1) %>%
+  mutate(date = as.numeric(format(date, "%Y")))
+
+# Left join with prices
+fundamental_and_prices <- fundamentals %>%
+  left_join(prices_per_year, by=c("For Year"="year", "Ticker Symbol"="symbol"))
+```
+
+```{r fundamental_prices_and_companyname}
+# Some company has moved from NYSE to NASDAQ
+# We need to combine both list in a single file
+# It reduces the unmatched data to 10
+# We check the the unmatched data using antijoin
+# These 10 data, we need to include manually
+# These data is missing because we the company is either acquisitioned by 
+# another company or change the company name.
+companylist <- read_csv("companylist.csv")
+
+# Join both tables
+fundamental_and_prices <- fundamental_and_prices %>%
+left_join(companylist, by=c("Ticker Symbol"="Symbol"))
+```
+
+```{r fundamental_and_prices}
+fundamental_and_prices_2015 <- fundamental_and_prices %>%
+  filter(`For Year` < 2016)
+
+# Creae
+fit <- lm(close ~ `Book Value` +
+`Earnings Per Share` +
+`Total Revenue` +
+`Current Ratio` +
+`Quick Ratio` +
+`Profit Margin` +
+`Operating Margin` +
+`Asset Turnover` +
+`Total Debt To Equity` +
+`Retained Earnings` +
+`Gross Margin`, data = fundamental_and_prices_2015, na.action=na.omit)
+
+summary(fit)
+
+# Filter the PR value that is more than 0.05 (5%)
+
+fit2 <- lm(close ~ `Book Value` +
+`Earnings Per Share` +
+`Profit Margin` +
+`Operating Margin` +
+`Total Debt To Equity`, data = fundamental_and_prices_2015, na.action=na.omit)
+
+summary(fit2)
+
+kfoldCv <- function(formula, data, folds = 0) {
+  # Error handling
+  if(!inherits(formula, "formula")) {
+    stop("Not a formula")
+  }
+  
+  # Convert to tibble
+  data <- as.tibble(data)
+  set.seed(1)
+  
+  message("Partitioning the data")
+  data_cv <- crossv_kfold(data, folds)
+  
+  message("Fitting models for cross-validation on training sets")
+  data_cv <- data_cv %>%
+    mutate(fit  = map(train, ~ lm(formula, data = ., na.action=na.omit)))
+  
+  message("Getting the cross-validated prediction errors")
+  data_cv <- data_cv %>%
+    mutate(rmse_train = map2_dbl(fit, train, ~ rmse(.x, .y)),
+    rmse_test = map2_dbl(fit, test, ~ rmse(.x, .y)))
+  
+  mean(data_cv$rmse_test)
+}
+
+model1 <- kfoldCv(
+  close ~ `Book Value` +
+  `Earnings Per Share` +
+  `Total Revenue` +
+  `Current Ratio` +
+  `Quick Ratio` +
+  `Profit Margin` +
+  `Operating Margin` +
+  `Asset Turnover` +
+  `Total Debt To Equity` +
+  `Retained Earnings` +
+  `Gross Margin`,
+  fundamental_and_prices_2015,
+  folds = 10
+  )
+model2 <- kfoldCv(
+  close ~ `Book Value` +
+  `Earnings Per Share` +
+  `Profit Margin` +
+  `Operating Margin` +
+  `Total Debt To Equity`,
+  fundamental_and_prices_2015,
+  folds = 10
+  )
+```
+
