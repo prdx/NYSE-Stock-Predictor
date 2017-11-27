@@ -9,12 +9,12 @@ prepareCompanyInfo <- function(data) {
       name = `Name`,
       sector = `Sector`,
       industry = `Industry`
-    ) %>%
-    distinct(ticker_symbol, name, sector, industry)
+    ) 
   
   companies
 }
 
+# Here is where the data tidying process begins
 companies <- prepareCompanyInfo(fundamental_and_prices)
 
 # Get list of all companies
@@ -29,7 +29,8 @@ getAllCompanyInfo <- function() {
 #' @json
 getCompanyByName <- function(companyName) {
   companies %>%
-    filter(name == companyName)
+    filter(name == companyName) %>%
+    select(ticker_symbol, name, sector, industry)
 }
 
 # Get list of all companies by ticker symbol
@@ -37,13 +38,47 @@ getCompanyByName <- function(companyName) {
 #' @json
 getCompanyByTicker <- function(tickerSymbol) {
   companies %>%
-    filter(ticker_symbol == paste(tickerSymbol))
+    filter(ticker_symbol == tickerSymbol) %>%
+    select(ticker_symbol, name, sector, industry)
 }
 
 # Get list of all companies by sector
 #' @post /sector
 #' @json
-getCompanyBySector <- function(sector) {
+getCompanyBySector <- function(sectorName) {
   companies %>%
-    filter(sector == paste(sector))
+    filter(sector == sectorName) %>%
+    select(ticker_symbol, name, sector, industry)
+}
+
+# Get detais of a company
+#' @post /details
+#' @json
+getCompanyDetailsByTicker <- function(tickerSymbol) {
+  companies %>%
+    filter(ticker_symbol == tickerSymbol)
+}
+
+# Get list of available companies
+#' @get /name
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(name)
+}
+
+# Get list of available companies ticker symbol
+#' @get /ticker
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(ticker_symbol)
+}
+
+# Get list of available companies sector
+#' @get /sector
+#' @json
+getCompaniesName <- function() {
+  companies %>%
+    distinct(sector)
 }
