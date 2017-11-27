@@ -37,14 +37,13 @@ fundamentals <- select(
   )
 
 # Filter invalid data
-fundamentals_2015 <- filter(
+fundamentals <- filter(
   fundamentals,
-  `For Year` != 1215,
-  `For Year` < 2016
+  `For Year` != 1215
   )
 
 # Mutate the data to get a new predictors
-fundamentals_2015 <- mutate(fundamentals_2015,
+fundamentals <- mutate(fundamentals,
   `Book Value` = `Total Assets` - (`Intangible Assets` + `Liabilities`),
   `Asset Turnover` = `Total Revenue` / `Total Assets`,
   `Total Debt To Equity` = `Total Liabilities` / `Total Equity`
@@ -65,15 +64,33 @@ prices_per_year <- prices %>%
   arrange(date) %>%
   filter(row_number()==1) %>%
   mutate(date = as.numeric(format(date, "%Y")))
+
+# Left join with prices
+fundamental_and_prices <- fundamentals %>%
+  left_join(prices_per_year, by=c("For Year"="year", "Ticker Symbol"="symbol"))
+```
+
+```{r fundamental_prices_and_companyname}
+# Some company has moved from NYSE to NASDAQ
+# We need to combine both list in a single file
+# It reduces the unmatched data to 10
+# We check the the unmatched data using antijoin
+# These 10 data, we need to include manually
+# These data is missing because we the company is either acquisitioned by 
+# another company or change the company name.
+companylist <- read_csv("companylist.csv")
+
+# Join both tables
+fundamental_and_prices <- fundamental_and_prices %>%
+left_join(companylist, by=c("Ticker Symbol"="Symbol"))
 ```
 
 ```{r fundamental_and_prices}
-# Left join with prices
-fundamental_and_prices <- fundamentals_2015 %>%
-  left_join(prices_per_year, by=c("For Year"="year", "Ticker Symbol"="symbol"))
+fundamental_and_prices_2015 <- fundamental_and_prices %>%
+  filter(`For Year` < 2016)
 
 # Creae
-fit <- lm(avg_close ~ `Book Value` +
+fit <- lm(close ~ `Book Value` +
 `Earnings Per Share` +
 `Total Revenue` +
 `Current Ratio` +
@@ -83,17 +100,17 @@ fit <- lm(avg_close ~ `Book Value` +
 `Asset Turnover` +
 `Total Debt To Equity` +
 `Retained Earnings` +
-`Gross Margin`, data = fundamental_and_prices, na.action=na.omit)
+`Gross Margin`, data = fundamental_and_prices_2015, na.action=na.omit)
 
 summary(fit)
 
 # Filter the PR value that is more than 0.05 (5%)
 
-fit2 <- lm(avg_close ~ `Book Value` +
+fit2 <- lm(close ~ `Book Value` +
 `Earnings Per Share` +
 `Profit Margin` +
 `Operating Margin` +
-`Total Debt To Equity`, data = fundamental_and_prices, na.action=na.omit)
+`Total Debt To Equity`, data = fundamental_and_prices_2015, na.action=na.omit)
 
 summary(fit2)
 
@@ -123,7 +140,7 @@ kfoldCv <- function(formula, data, folds = 0) {
 }
 
 model1 <- kfoldCv(
-  avg_close ~ `Book Value` +
+  close ~ `Book Value` +
   `Earnings Per Share` +
   `Total Revenue` +
   `Current Ratio` +
@@ -134,31 +151,17 @@ model1 <- kfoldCv(
   `Total Debt To Equity` +
   `Retained Earnings` +
   `Gross Margin`,
-  fundamental_and_prices,
+  fundamental_and_prices_2015,
   folds = 10
   )
 model2 <- kfoldCv(
-  avg_close ~ `Book Value` +
+  close ~ `Book Value` +
   `Earnings Per Share` +
   `Profit Margin` +
   `Operating Margin` +
   `Total Debt To Equity`,
-  fundamental_and_prices,
+  fundamental_and_prices_2015,
   folds = 10
   )
 ```
 
-```{r fundamental_prices_and_companyname}
-# Some company has moved from NYSE to NASDAQ
-# We need to combine both list in a single file
-# It reduces the unmatched data to 10
-# We check the the unmatched data using antijoin
-# These 10 data, we need to include manually
-# These data is missing because we the company is either acquisitioned by 
-# another company or change the company name.
-companylist <- read_csv("companylist.csv")
-
-# Join both tables
-fundamental_and_prices <- fundamental_and_prices %>%
-left_join(companylist, by=c("Ticker Symbol"="Symbol"))
-```
