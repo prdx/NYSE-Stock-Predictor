@@ -8,6 +8,9 @@ fundamental_and_prices_2016 <<- read_csv(
 fundamental_and_prices_2015 <<- read_csv(
   paste0(path, "fundamental_and_prices_2015.csv"))
 
+sentiment_result <<- read_csv(
+  paste0(path, "sentiment_result.csv"))
+
 source(paste0(getwd(), "/R/companies.R"))
 context("Companies API")
 

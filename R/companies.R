@@ -66,7 +66,7 @@ getCompanyDetailsByTicker <- function(tickerSymbol) {
         ~"Book Value", ~"Earnings Per Share", ~"Profit Margin", ~"Operating Margin", ~"Total Debt To Equity",
         `Book Value`, `Earnings Per Share`, `Profit Margin`, `Operating Margin`, `Total Debt To Equity`
       )
-    ))
+    ), sentiment_result = getNewsSentimentAnalysis(tickerSymbol))
 }
 
 # Get list of available companies

@@ -1,7 +1,10 @@
-library(dplyr)
+library(readr)
 
 setwd("../..")
 path <- paste0(getwd(), "/data/")
+
+sentiment_result <<- read_csv(
+  paste0(path, "sentiment_result.csv"))
 
 source(paste0(getwd(), "/R/sentiment.R"))
 context("Sentiment analysis model")
