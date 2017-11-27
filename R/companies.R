@@ -1,6 +1,8 @@
 library("readr")
 library("dplyr")
 
+source("R/lm.R")
+
 # This function will prepare the data needed for getting the information
 prepareCompanyInfo <- function(data) {
   companies <- data %>%
@@ -15,7 +17,7 @@ prepareCompanyInfo <- function(data) {
 }
 
 # Here is where the data tidying process begins
-companies <- prepareCompanyInfo(fundamental_and_prices)
+companies <- prepareCompanyInfo(fundamental_and_prices_2016)
 
 # Get list of all companies
 #' @get /all
@@ -56,7 +58,13 @@ getCompanyBySector <- function(sectorName) {
 #' @json
 getCompanyDetailsByTicker <- function(tickerSymbol) {
   companies %>%
-    filter(ticker_symbol == tickerSymbol)
+    filter(ticker_symbol == tickerSymbol) %>%
+    mutate(predictedLm = predictPrice(
+      tribble(
+        ~"Book Value", ~"Earnings Per Share", ~"Profit Margin", ~"Operating Margin", ~"Total Debt To Equity",
+        `Book Value`, `Earnings Per Share`, `Profit Margin`, `Operating Margin`, `Total Debt To Equity`
+      )
+    ))
 }
 
 # Get list of available companies
