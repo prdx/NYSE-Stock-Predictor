@@ -12,6 +12,9 @@ fundamental_and_prices_2016 <<- read_csv(
 sentiment_result <<- read_csv(
   paste0(data_path, "sentiment_result.csv"))
 
+lstm_result <<- read_csv(
+  paste0(data_path, "lstm_result.csv"))
+
 # When we run the script, it will also run tidy the fundamental_and_prices.
 # That is why we put the fundamental_and_prices above
 source("R/companies.R")

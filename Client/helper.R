@@ -20,13 +20,15 @@ changeTickerIntoLink <- function(data) {
 }
 
 # This function will format the recommendation to HTML format
-changeRecommendationIntoLink <- function(data) {
+changeRecommendationIntoHTML <- function(data) {
   data %>%
     mutate(recommendation = map(recommendation, function(.recommendation) {
-      if(.recommendation < 0) {
+      if(is.na(.recommendation)) {
+        "<p>UNKNOWN</p>"
+      } else if(.recommendation < 0) {
         "<p style='color:red;'>SELL</p>"
       }
-      else if(.recommendation >0) {
+      else if(.recommendation > 0) {
         "<p style='color:green;'>BUY</p>"
       }
       else {
@@ -42,12 +44,13 @@ changeHeaderName <- function(data) {
       `Ticker Symbol` = ticker_symbol,
       `Company Name` = name,
       `Sector` = sector,
-      `Industry` = industry
+      `Industry` = industry,
+      `Recommendation` = recommendation
       )
 }
 
 # Make distinct
 makeDistinct <- function(data) {
   data %>%
-    distinct(ticker_symbol, name, sector, industry)
+    distinct(ticker_symbol, name, sector, industry, recommendation)
 }

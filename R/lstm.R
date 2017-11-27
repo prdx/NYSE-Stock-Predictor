@@ -1,6 +1,5 @@
-library(readr)
-
 # Get LSTM value for each company
-getLSTMValue <- function(tickerSymbol) {
-  
+getAllLSTMValue <- function() {
+  lstm_result %>%
+    mutate(recommendation = future_price - current_price)
 }
