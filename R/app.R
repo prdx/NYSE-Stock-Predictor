@@ -12,6 +12,7 @@ fundamental_and_prices_2016 <<- read_csv(
 # When we run the script, it will also run tidy the fundamental_and_prices.
 # That is why we put the fundamental_and_prices above
 source("R/companies.R")
+source("R/sentiment.R")
 
 # Create an empty plumber instance
 app <- plumber$new()
@@ -24,5 +25,9 @@ app$mount("/companies", companies)
 # Endpoint /lm
 linearModel <- plumber$new("R/lm.R")
 app$mount("/lm", linearModel)
+
+# Endpoint /sentiment
+sentiment <- plumber$new("R/sentiment.R")
+app$mount("/lm", sentiment)
 
 app$run(host="0.0.0.0", port=8000)

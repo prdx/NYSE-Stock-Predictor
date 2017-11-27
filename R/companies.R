@@ -2,6 +2,8 @@ library("readr")
 library("dplyr")
 
 source("R/lm.R")
+source("R/sentiment.R")
+source("R/lstm.R")
 
 # This function will prepare the data needed for getting the information
 prepareCompanyInfo <- function(data) {
