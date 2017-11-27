@@ -26,6 +26,15 @@ getLmRmse <- function() {
   as.list(this.content)
 }
 
+# GET /sentiment/value
+getSentimentValue <- function() {
+  endpoint <- '/sentiment/value'
+  raw.result <- GET(url = paste0(host, endpoint))
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  as.list(this.content)
+}
+
 # POST /companies/details
 postDetails <- function(tickerLink) {
   # Get only the ticker symbol
