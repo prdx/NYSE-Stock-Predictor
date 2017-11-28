@@ -98,7 +98,8 @@ server <- function(input, output) {
                "<p><b>Company name:</b> ", params$companyDetails[["Company Name"]][[1]], "</p>",
                "<p><b>Sector:</b> ", params$companyDetails[["Sector"]][[1]], "</p>",
                "<p><b>Industry:</b> ", params$companyDetails[["Industry"]][[1]], "</p>",
-               "<p><b>LM prediction:</b> ", params$companyDetails[["predictedLm"]][[1]]
+               "<p><b>LM prediction:</b> ", params$companyDetails[["predictedLm"]][[1]], "</p>",
+               "<p><b>Sentiment analysis from the news:</b> ", params$companyDetails[["sentiment_result"]][[1]], "</p>"
                ))
     })
 }    

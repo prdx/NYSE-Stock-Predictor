@@ -38,9 +38,6 @@ postDetails <- function(tickerLink) {
                      body = paste0("tickerSymbol=", ticker))
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
-  print(as.list(changeHeaderName(
-    this.content
-  )))
   as.list(changeHeaderName(
     this.content
   ))
@@ -55,7 +52,7 @@ postName <- function(name) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }
 
@@ -68,7 +65,7 @@ postTicker <- function(ticker) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }
 
@@ -81,6 +78,6 @@ postSector <- function(sector) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }
