@@ -11,6 +11,9 @@ fundamental_and_prices_2015 <<- read_csv(
 sentiment_result <<- read_csv(
   paste0(path, "sentiment_result.csv"))
 
+lstm_result <<- read_csv(
+  paste0(path, "lstm_result.csv"))
+
 source(paste0(getwd(), "/R/companies.R"))
 context("Companies API")
 
