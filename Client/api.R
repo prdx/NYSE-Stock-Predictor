@@ -4,9 +4,9 @@
 library(httr)
 library(jsonlite)
 
-source("Client/helper.R")
+source("helper.R")
 
-host <- 'http://localhost:8000'
+host <- 'http://52.87.114.182:8000'
 
 # GET /companies/sector
 getSectorList <- function() {
