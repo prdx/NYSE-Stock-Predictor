@@ -22,9 +22,6 @@ prepareCompanyInfo <- function(data) {
 companies <- prepareCompanyInfo(fundamental_and_prices_2016)
 lstm_result <- getAllLSTMValue()
 
-companies <- companies %>%
-  left_join(lstm_result, by=c("ticker_symbol" = "ticker"))
-
 # Get list of all companies
 #' @get /all
 #' @json
@@ -47,6 +44,7 @@ getCompanyByName <- function(companyName) {
 getCompanyByTicker <- function(tickerSymbol) {
   companies %>%
     filter(ticker_symbol == tickerSymbol) %>%
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
     select(ticker_symbol, name, sector, industry, recommendation) 
 }
 
@@ -56,6 +54,7 @@ getCompanyByTicker <- function(tickerSymbol) {
 getCompanyBySector <- function(sectorName) {
   companies %>%
     filter(sector == sectorName) %>%
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
     select(ticker_symbol, name, sector, industry, recommendation)
 }
 
@@ -65,6 +64,7 @@ getCompanyBySector <- function(sectorName) {
 getCompanyDetailsByTicker <- function(tickerSymbol) {
   companies %>%
     filter(ticker_symbol == tickerSymbol) %>%
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
     mutate(predictedLm = predictPrice(
       tribble(
         ~"Book Value", ~"Earnings Per Share", ~"Profit Margin", ~"Operating Margin", ~"Total Debt To Equity",
