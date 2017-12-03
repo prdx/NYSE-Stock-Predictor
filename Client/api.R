@@ -6,7 +6,7 @@ library(jsonlite)
 
 source("helper.R")
 
-host <- 'http://52.87.114.182:8000'
+host <- 'http://34.201.250.55:8000'
 
 # GET /companies/sector
 getSectorList <- function() {
