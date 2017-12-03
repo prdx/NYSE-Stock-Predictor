@@ -3,5 +3,18 @@ sudo: false
 cache: packages
 script: Rscript -e 'testthat::test_dir("tests/testthat")'
 notifications:
-    email:
-      - trihatmaja.a@husky.neu.edu
+  email:
+  - trihatmaja.a@husky.neu.edu
+after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  - export REPO=btrihatmaja/stock-predictor
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - docker build -f Dockerfile -t $REPO:$COMMIT .
+  - docker tag $REPO:$COMMIT $REPO:$TAG
+  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
+  - docker push $REPO
+env:
+  global:
+  - secure: AxpG5byCExQ6we5QJEsZfUUQuQ82lvdsMkcFr8WmYsch7vGINtUUo4s3WjvFWupzmHaV4iuWsCz+IW2S3cv0LC2Clfui9WE6YhP/fwyWRkiR2fNf6JJgGPpHRGS01TzV08UEr1UwvO88Zn/Vx85vRhh5mccbiHbYVzNOkezNsBuXIqUUMWtpAzXbb9Lep8a8Rj1xDhaUga6qxe3sDPuCS2l2VbQnE1lorgyVYp4LxTLjVFD0AQ6R12/l14M+B60UQxCunV19EMSGaB/P8z12NftayqyV+NBFcAO9xBTneXROGFHeCLL0BG4NVNSJzY4guuC2sl8MUQvvmq8Llfx8LGHHEiuAl82xzV5M7PuUJZgcS48Czl/mQiTVahypT4uP550wMj2t5IxlA8+NJLcNYqD1+aqJwTOej3DKQvhsB8OA/EMFG2tEET/sndeylpgIodEiEVFjfKwpGLMW4jyj1etLS2QcUzVrleV1tTAQ4e7JK6kNKOfPpEq3KTgUSD50sGHze/blkCfeopVk19RcqP9nsq4jDnai6D9RNdL/p7wwYZAUQD5t3NPlmei5rnN81YnMMrBzDxO2C1Gk3ZMDoUbCqw7a8v1WTNuMjh3K3Y04MrB9DWB4e+xrx1lgMNGcAJ0UIxjbF4bcaDGFCEjm1R//UYAazeYmwi2GySWiGPM=
+  - secure: SfwLRyrAMBXhCAWd0qGvv6a3zOEIDpc5tByGCVvkRIgrfO8TOvlvQT4+3azsv/m5Ls0SCGrmhkHcdjgFTauD56lz5a9beOnRNQjIoETkk/U6CmJbRCkoXoSf+tdQgbTZNLL7MOcMZrg4ZAnc2casvd7oJvTZoTIvGsOMtgctItJ8L1EQ5jQGNC2yomq1Rh2n1/p/Geuvxst6RirrCf6Y6WE4KiYE4oBxpm/mClVWV5TB03pRWueQvYJZ8f9J1qJCiJ3aDtdk9sbLuCXU78bv7etIJT4jmt/KjQ+W+QsGVg/o8wpmzpuU3qyypiA8d1Ij8CO5oo63A2DaIYJeGJrQICyJp9UZ+t6Ge75nkXJ6Z37Yyhmyge5CcwvV2g2376Qp3CZW36sllPYVvdfyzFx+De/pHB05mCw/Fk2h8FtuzBJg41uQu8FRe9bNHIKipTVvytcd6EDz8Md603QHMKibSH6P8TJ4LG6twdLakKbovq07lfTG6O+VviGKnR5GxIb/rZ1io1uxDimPD7iEi4XPS/q0H4MOZnDen0bGIBiHiKruYBJT1fUxbg217ztnNhYdWZk6V0Ijn59ksVZktnRxX2MyHhoinwhIDL9Dvqg5lpDyJjux9ZqqSZo5nds9wWk9A3LfRGLpJZx4X4YtSb4OpEBAqM0Y5arEZYD5JQEEcow=
+  - secure: mIHru3u3EsqgO/u6MDIENh6tetkbvFmzH1l+J957O54Iphjr/enWdLMY/wBjMEfSkhPyt5bbLJA4mDnRBxk6umwCqeIICFINYFBQ4vLadMqHpwXcMOy6MZv00p7QUf9rb91NW+8lJEZv4hehCGH1pCH2d3xfGvhF/IMsUmhYZbqsJX9ksF9YopnlC3Iif3qfvuFWng4OQSfAwoFP0XKnvX/UPo+PInN+6IcaLVunRsVLtzGhW/WVzPGUR3I8OBYPMEznvJzMpnHbGiGe+B+j0XP2TmvGMLbVC6jUYBU2TmSUGtoIdDtLJIokpxqme4i33IEIUP01Myv79vyMvpRtrqLqoPMQP20sUhZt2A0Uud87p4S+byukismGphtiqfKq2p88Ca9u0qA81A9rMRfl2F+gvisEtvNO5xJf1SY31iNx263lysyW7aSjVFkiVDRWAH1JBR64eMPtGh2spmgH4uabZ8diJmbrwDWpeZEzLid6jvw7OYBh/19+NG5mIakuIPOOEoU7koCd5BVpmqM8V0TVxSkOzLLSG1r4xoPKF9GspcymZWOX3cXXBdaMJzEWD+JOaWDjhyVuAs5aYkTG+edPP95MTeyCVI3AeHY49yzfpnCrKH1mPYBSZuNUGRtW7bLwBlXLBAsrk8jthrUzcWsTw3mZMZCPH1xGTEJAMwc=
