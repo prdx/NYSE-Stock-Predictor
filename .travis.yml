@@ -12,11 +12,11 @@ jobs:
   - stage: build docker image
     script:
     - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
- 	  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-	  - docker build -t stock-predictor .
- 	  - docker images
- 	  - docker tag stock-predictor $DOCKER_USER/stock-predictor:$TAG
- 	  - docker push $DOCKER_USER/stock-predictor:$TAG
+    - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+    - docker build -t stock-predictor .
+    - docker images
+    - docker tag stock-predictor $DOCKER_USER/stock-predictor:$TAG
+    - docker push $DOCKER_USER/stock-predictor:$TAG
 env:
   global:
   - secure: AxpG5byCExQ6we5QJEsZfUUQuQ82lvdsMkcFr8WmYsch7vGINtUUo4s3WjvFWupzmHaV4iuWsCz+IW2S3cv0LC2Clfui9WE6YhP/fwyWRkiR2fNf6JJgGPpHRGS01TzV08UEr1UwvO88Zn/Vx85vRhh5mccbiHbYVzNOkezNsBuXIqUUMWtpAzXbb9Lep8a8Rj1xDhaUga6qxe3sDPuCS2l2VbQnE1lorgyVYp4LxTLjVFD0AQ6R12/l14M+B60UQxCunV19EMSGaB/P8z12NftayqyV+NBFcAO9xBTneXROGFHeCLL0BG4NVNSJzY4guuC2sl8MUQvvmq8Llfx8LGHHEiuAl82xzV5M7PuUJZgcS48Czl/mQiTVahypT4uP550wMj2t5IxlA8+NJLcNYqD1+aqJwTOej3DKQvhsB8OA/EMFG2tEET/sndeylpgIodEiEVFjfKwpGLMW4jyj1etLS2QcUzVrleV1tTAQ4e7JK6kNKOfPpEq3KTgUSD50sGHze/blkCfeopVk19RcqP9nsq4jDnai6D9RNdL/p7wwYZAUQD5t3NPlmei5rnN81YnMMrBzDxO2C1Gk3ZMDoUbCqw7a8v1WTNuMjh3K3Y04MrB9DWB4e+xrx1lgMNGcAJ0UIxjbF4bcaDGFCEjm1R//UYAazeYmwi2GySWiGPM=
