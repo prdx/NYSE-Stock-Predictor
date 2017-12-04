@@ -163,5 +163,62 @@ news_sentiment <- news_tokens_test %>%
 news_result_table <- news_sentiment %>%
   mutate(score = (positive - negative) / (positive + negative)) %>%
   mutate(Date = reorder(Date, score))
+```
 
+
+```{r live_news}
+# library(tm.plugin.webmining)
+# was getting rJava error with the above package. spent 30m to fix it
+# I had the same problem and went through the same steps as you. 
+# The final step to allow starting RStudio through Finder/Spotlight 
+# was to link libjvm.dylib to /usr/local/lib:
+# 
+# sudo ln -f -s $(/usr/libexec/java_home)/jre/lib/server/libjvm.dylib /usr/local/lib
+# -f flag is added to force overwriting existing file/link
+
+#useful links
+# https://stackoverflow.com/questions/30738974/rjava-load-error-in-rstudio-r-after-upgrading-to-osx-yosemite/31039105#31039105
+# https://stackoverflow.com/questions/26948777/how-can-i-make-rjava-use-the-newer-version-of-java-on-osx
+# http://conjugateprior.org/2014/12/r-java8-osx/
+# https://github.com/snowflakedb/dplyr-snowflakedb/wiki/Configuring-R-rJava-RJDBC-on-Mac-OS-X
+
+
+ticker <- c("AAPL", "GOOG", "AMZN", "FB", "TWTR", "IBM", "YHOO", "NFLX")
+
+article_finder <- function(ticker) {
+  WebCorpus(YahooNewsSource(paste0("NASDAQ:", ticker)))
+}
+
+#google_new <- data_frame()
+
+yahoo_news <- data_frame(ticker_id = row_number(1:8),
+                             ticker = ticker) %>%
+  mutate(corpus = map(ticker, article_finder))
+
+live_tokens <- yahoo_news %>%
+  unnest(map(corpus, tidy)) %>%
+  unnest_tokens(word, text) %>%
+  select(ticker, datetimestamp, word, id, heading)
+
+live_tf_idf <- live_tokens %>%
+  count(ticker, word) %>%
+  filter(!str_detect(word, "\\d+")) %>%
+  bind_tf_idf(word, ticker, n) %>%
+  arrange(-tf_idf)
+
+stock_sentiments <- live_tokens %>%
+  inner_join(get_sentiments("loughran"), by = "word") %>%
+  count(sentiment, ticker) %>%
+  spread(sentiment, n, fill = 0)
+
+sentiment_scores <- stock_sentiments %>%
+  mutate(score = (positive - negative) / (positive + negative)) 
+
+csv_builder <- data.frame()
+
+csv_builder <- sentiment_scores %>%
+  select(ticker, score)
+
+write_csv(csv_builder, 
+          "/Users/Chaitya/fall17/DS5110/Project/Project/data/sentiment_result.csv")
 ```
