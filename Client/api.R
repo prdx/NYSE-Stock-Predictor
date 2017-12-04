@@ -4,13 +4,22 @@
 library(httr)
 library(jsonlite)
 
-source("Client/helper.R")
+source("helper.R")
 
-host <- 'http://localhost:8000'
+host <- 'http://34.201.250.55:8000'
 
 # GET /companies/sector
 getSectorList <- function() {
   endpoint <- '/companies/sector'
+  raw.result <- GET(url = paste0(host, endpoint))
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  as.list(this.content)
+}
+
+# GET /lm/rmse
+getLmRmse <- function() {
+  endpoint <- '/lm/rmse'
   raw.result <- GET(url = paste0(host, endpoint))
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
@@ -43,7 +52,7 @@ postName <- function(name) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }
 
@@ -56,7 +65,7 @@ postTicker <- function(ticker) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }
 
@@ -69,6 +78,6 @@ postSector <- function(sector) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   changeHeaderName(
-    changeTickerIntoLink(makeDistinct(this.content))
+    changeRecommendationIntoHTML(changeTickerIntoLink(makeDistinct(this.content)))
   )
 }

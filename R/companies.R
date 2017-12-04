@@ -1,6 +1,10 @@
 library("readr")
 library("dplyr")
 
+source("R/lm.R")
+source("R/sentiment.R")
+source("R/lstm.R")
+
 # This function will prepare the data needed for getting the information
 prepareCompanyInfo <- function(data) {
   companies <- data %>%
@@ -15,7 +19,8 @@ prepareCompanyInfo <- function(data) {
 }
 
 # Here is where the data tidying process begins
-companies <- prepareCompanyInfo(fundamental_and_prices)
+companies <- prepareCompanyInfo(fundamental_and_prices_2016)
+lstm_result <- getAllLSTMValue()
 
 # Get list of all companies
 #' @get /all
@@ -30,7 +35,7 @@ getAllCompanyInfo <- function() {
 getCompanyByName <- function(companyName) {
   companies %>%
     filter(name == companyName) %>%
-    select(ticker_symbol, name, sector, industry)
+    select(ticker_symbol, name, sector, industry, recommendation)
 }
 
 # Get list of all companies by ticker symbol
@@ -39,7 +44,8 @@ getCompanyByName <- function(companyName) {
 getCompanyByTicker <- function(tickerSymbol) {
   companies %>%
     filter(ticker_symbol == tickerSymbol) %>%
-    select(ticker_symbol, name, sector, industry)
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
+    select(ticker_symbol, name, sector, industry, recommendation) 
 }
 
 # Get list of all companies by sector
@@ -48,7 +54,8 @@ getCompanyByTicker <- function(tickerSymbol) {
 getCompanyBySector <- function(sectorName) {
   companies %>%
     filter(sector == sectorName) %>%
-    select(ticker_symbol, name, sector, industry)
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
+    select(ticker_symbol, name, sector, industry, recommendation)
 }
 
 # Get detais of a company
@@ -56,7 +63,14 @@ getCompanyBySector <- function(sectorName) {
 #' @json
 getCompanyDetailsByTicker <- function(tickerSymbol) {
   companies %>%
-    filter(ticker_symbol == tickerSymbol)
+    filter(ticker_symbol == tickerSymbol) %>%
+    left_join(lstm_result, by=c("ticker_symbol" = "ticker")) %>%
+    mutate(predictedLm = predictPrice(
+      tribble(
+        ~"Book Value", ~"Earnings Per Share", ~"Profit Margin", ~"Operating Margin", ~"Total Debt To Equity",
+        `Book Value`, `Earnings Per Share`, `Profit Margin`, `Operating Margin`, `Total Debt To Equity`
+      )
+    ), sentiment_result = getNewsSentimentAnalysis(tickerSymbol))
 }
 
 # Get list of available companies
