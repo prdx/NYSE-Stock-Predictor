@@ -2,6 +2,7 @@ library("readr")
 library("dplyr")
 
 source("R/lm.R")
+source("R/logistic.R")
 source("R/sentiment.R")
 source("R/lstm.R")
 
@@ -70,7 +71,9 @@ getCompanyDetailsByTicker <- function(tickerSymbol) {
         ~"Book Value", ~"Earnings Per Share", ~"Profit Margin", ~"Operating Margin", ~"Total Debt To Equity",
         `Book Value`, `Earnings Per Share`, `Profit Margin`, `Operating Margin`, `Total Debt To Equity`
       )
-    ), sentiment_result = getNewsSentimentAnalysis(tickerSymbol))
+    ), sentiment_result = getNewsSentimentAnalysis(tickerSymbol),
+    predictedLog = predictPriceByLogistic(logistic_test)
+    )
 }
 
 # Get list of available companies
