@@ -49,8 +49,23 @@ changeHeaderName <- function(data) {
       )
 }
 
+changeLogisticToCategory <- function(data) {
+  data %>%
+    mutate(predictorLog = map(.predictedLog, function() {
+      if (.predictedLog == 0) {
+        "<p>NEUTRAL</p>"
+      } else if(.predictedLog < 0) {
+        "<p style='color:red;'>DECREASE</p>"
+      } else if(.predictedLog > 0) {
+        "<p style='color:green;'>INCREASE</p>"
+      }
+    }))
+}
+
 # Make distinct
 makeDistinct <- function(data) {
   data %>%
     distinct(ticker_symbol, name, sector, industry, recommendation)
 }
+
+

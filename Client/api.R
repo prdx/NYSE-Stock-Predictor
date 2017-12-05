@@ -39,7 +39,7 @@ postDetails <- function(tickerLink) {
   this.raw.content <- rawToChar(raw.result$content)
   this.content <- fromJSON(this.raw.content)
   as.list(changeHeaderName(
-    this.content
+    changeLogisticToCategory(this.content)
   ))
 }
 
