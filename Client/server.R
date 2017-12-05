@@ -54,7 +54,7 @@ shinyServer(
                  "<p><b>Sector:</b> ", params$companyDetails[["Sector"]][[1]], "</p>",
                  "<p><b>Industry:</b> ", params$companyDetails[["Industry"]][[1]], "</p>",
                  "<p><b>LM prediction:</b> ", params$companyDetails[["predictedLm"]][[1]], "</p>",
-                 "<p><b>Logistic prediction:</b> ", params$companyDetails[["predictedLm"]][[1]], "</p>",
+                 "<p><b>Logistic prediction:</b> ", params$companyDetails[["predictedLog"]][[1]], "</p>",
                  "<p><b>Sentiment analysis from the news:</b> ", params$companyDetails[["sentiment_result"]][[1]], "</p>",
                  "<p><i>Note: For the sentiment analysis, closer to +1 implies 'Buy' and closer to -1 implies 'Sell'.</i></p>"
       ))

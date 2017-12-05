@@ -51,7 +51,7 @@ changeHeaderName <- function(data) {
 
 changeLogisticToCategory <- function(data) {
   data %>%
-    mutate(predictorLog = map(.predictedLog, function() {
+    mutate(predictedLog = map(predictedLog, function(.predictedLog) {
       if (.predictedLog == 0) {
         "<p>NEUTRAL</p>"
       } else if(.predictedLog < 0) {
