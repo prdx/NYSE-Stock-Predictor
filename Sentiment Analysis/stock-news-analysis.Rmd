@@ -7,12 +7,6 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-```
-
-```{r install}
-install.packages("tidytext")
-install.packages("tm.plugin.webmining")
 ```
 
 ```{r load_libs}
@@ -21,7 +15,7 @@ library("tidyverse")
 library("devtools")
 library("tm")
 library("SnowballC")
-# library("wordcloud")
+library("wordcloud")
 library("sentiment")
 library("tidytext")
 library("purrr")
@@ -85,31 +79,146 @@ reddit_clean <- reddit_clean %>%
 #https://github.com/andrie/sentiment
 
 # example
-# sentiment(c("There is a terrible flaw in this work"))
+# sentiment(c("This is a great project"))
 
-reddit3 <- data.frame()
-
-reddit2 <- reddit_clean
+reddit_scores <- data.frame()
 
 for(i in 1:25){
-  reddit2[paste0("Score_", i)] <- sentiment(c(reddit2[[paste0("News_", i)]]))
+  reddit_clean[paste0("Score_", i)] <- sentiment(c(reddit_clean[[paste0("News_", i)]]))
 }
 
-# make this elegant
-reddit_scores <- reddit2 %>%
-  transmute(Total = sum(Score_1, Score_2, Score_3, Score_4, Score_5, Score_6,
-                        Score_7, Score_8, Score_9, na.rm=TRUE))
+#use loop here
 
-# elegant sum not working
-# reddit3 <- reddit2 %>%
-#   
-#   transmute(Total = sum(reddit2[,27:29], na.rm=TRUE))
-
-
-
-# reddit3 <- reddit2 %>%
-#   transmute(Total = rowSums(reddit2[,27:29], na.rm=TRUE))
+reddit_scores <- reddit_clean %>%
+  transmute(Total = sum(Score_1 + Score_2 + Score_3 + Score_4 +
+                          Score_5 + Score_6 + Score_7 + Score_8 +
+                          Score_9 + Score_10 + Score_11 + Score_12 +
+                          Score_13 + Score_14 + Score_15 + Score_16 +
+                          Score_17 + Score_18 + Score_19 + Score_20 +
+                          Score_21 + Score_22 + Score_23 + Score_24 + 
+                          Score_25, na.rm=TRUE))
 
 
-reddit_scores
+```
+
+```{r reddit_tokens}
+# tokenization method but
+# getting negative values for all 
+reddit_tokens <- reddit_clean %>%
+  unnest_tokens(word, News_1) 
+
+
+reddit4 <- reddit
+
+# get individual words
+news_tokens <- reddit4 %>%
+  unnest_tokens(word, News)
+
+# convert row names to integer formats
+row_names <- row.names(news_tokens)
+news_tokens$row_names <- row_names
+
+news_tokens$row_names <- as.integer(news_tokens$row_names)
+
+news_tokens_test <- news_tokens[1:10000,]
+news_tokens_test$row_names <- as.integer(news_tokens_test$row_names)
+
+news_tf_idf <- news_tokens_test %>%
+  count(Date, word) %>%
+  filter(!str_detect(word, "\\d+")) %>%
+  bind_tf_idf(word, Date, n) %>%
+  arrange(-tf_idf)
+
+news_tokens_test %>%
+  anti_join(stop_words, by = "word") %>%
+  count(word, Date, sort = TRUE) %>%
+  inner_join(get_sentiments("afinn"), by = "word") %>%
+  group_by(word) %>%
+  summarize(contribution = sum(n * score)) %>%
+  top_n(20, abs(contribution)) %>%
+  mutate(word = reorder(word, contribution)) %>%
+  ggplot(aes(word, contribution)) +
+  geom_col() +
+  coord_flip() +
+  labs(y = "Frequency of word * AFINN score")
+
+news_tokens_test %>%
+  count(word) %>%
+  inner_join(get_sentiments("loughran"), by = "word") %>%
+  group_by(sentiment) %>%
+  top_n(10, n) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ sentiment, scales = "free") +
+  ylab("Frequency of this word in the recent financial headlines")
+
+news_sentiment <- news_tokens_test %>%
+  inner_join(get_sentiments("loughran"), by = "word") %>%
+  count(sentiment, Date) %>%
+  spread(sentiment, n, fill = 0)
+
+news_result_table <- news_sentiment %>%
+  mutate(score = (positive - negative) / (positive + negative)) %>%
+  mutate(Date = reorder(Date, score))
+```
+
+
+```{r live_news}
+# library(tm.plugin.webmining)
+# was getting rJava error with the above package. spent 30m to fix it
+# I had the same problem and went through the same steps as you. 
+# The final step to allow starting RStudio through Finder/Spotlight 
+# was to link libjvm.dylib to /usr/local/lib:
+# 
+# sudo ln -f -s $(/usr/libexec/java_home)/jre/lib/server/libjvm.dylib /usr/local/lib
+# -f flag is added to force overwriting existing file/link
+
+#useful links
+# https://stackoverflow.com/questions/30738974/rjava-load-error-in-rstudio-r-after-upgrading-to-osx-yosemite/31039105#31039105
+# https://stackoverflow.com/questions/26948777/how-can-i-make-rjava-use-the-newer-version-of-java-on-osx
+# http://conjugateprior.org/2014/12/r-java8-osx/
+# https://github.com/snowflakedb/dplyr-snowflakedb/wiki/Configuring-R-rJava-RJDBC-on-Mac-OS-X
+
+
+ticker <- c("AAPL", "GOOG", "AMZN", "FB", "TWTR", "IBM", "YHOO", "NFLX")
+
+article_finder <- function(ticker) {
+  WebCorpus(YahooNewsSource(paste0("NASDAQ:", ticker)))
+}
+
+#google_new <- data_frame()
+
+yahoo_news <- data_frame(ticker_id = row_number(1:8),
+                             ticker = ticker) %>%
+  mutate(corpus = map(ticker, article_finder))
+
+live_tokens <- yahoo_news %>%
+  unnest(map(corpus, tidy)) %>%
+  unnest_tokens(word, text) %>%
+  select(ticker, datetimestamp, word, id, heading)
+
+live_tf_idf <- live_tokens %>%
+  count(ticker, word) %>%
+  filter(!str_detect(word, "\\d+")) %>%
+  bind_tf_idf(word, ticker, n) %>%
+  arrange(-tf_idf)
+
+stock_sentiments <- live_tokens %>%
+  inner_join(get_sentiments("loughran"), by = "word") %>%
+  count(sentiment, ticker) %>%
+  spread(sentiment, n, fill = 0)
+
+sentiment_scores <- stock_sentiments %>%
+  mutate(score = (positive - negative) / (positive + negative)) 
+
+csv_builder <- data.frame()
+
+csv_builder <- sentiment_scores %>%
+  select(ticker, score)
+
+write_csv(csv_builder, 
+          "/Users/Chaitya/fall17/DS5110/Project/Project/data/sentiment_result.csv")
 ```

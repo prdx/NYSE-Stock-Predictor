@@ -1,0 +1,2 @@
+date,symbol,open,close,low,high,volume,new_close,increased,status
+2016-12-30T00:00:00Z,AAPL,116.650002,115.82,115.43,117.199997,30586300,-0.9100030000000032,FALSE,Decreased
