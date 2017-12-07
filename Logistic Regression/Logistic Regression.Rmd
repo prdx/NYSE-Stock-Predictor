@@ -1,0 +1,104 @@
+---
+title: "Logistic Regression"
+author: "Agrima Saraf"
+date: "11/25/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r reading data, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(modelr)
+prices <- read_csv("~/Desktop/Grad/Acad/DS5110/Project/prices.csv")
+prices
+```
+
+
+```{r new_close column, echo=FALSE}
+#for Apple stocks 
+prices <- prices %>%
+  filter(symbol == "AAPL")
+
+prices
+
+n <- nrow(prices)
+prices$new_close <- 0
+for (i in 2:n) {
+   prices$new_close[i] <- prices$close[i] - prices$close[i-1]
+ }
+prices
+```
+
+```{r status column, echo=FALSE}
+prices <- mutate(prices,
+                increased = new_close > 0,
+                status = factor(ifelse(increased,
+                                          "Increased", "Decreased")),
+                status = relevel(status, ref="Decreased")
+                )
+prices
+
+```
+
+```{r dividing into testing and training, echo=FALSE}
+
+prices_train <- prices %>%
+  arrange(date) %>%
+  head(1761)
+
+write_csv(prices_train, "logistic_train.csv")
+
+prices_test <- prices %>%
+  arrange(desc(date)) %>%
+  head(1)
+
+write_csv(prices_test, "logistic_test.csv")
+
+
+```
+
+
+```{r logistic regression model, echo=FALSE}
+#creating the logistic regression model
+predictivemodel <- glm(status ~ open + low + high ,
+                       family=binomial(link="logit"), data = prices_train)
+summary(predictivemodel)
+```
+
+
+```{r predicting accuracy on training data, echo=FALSE}
+pred <- predict(predictivemodel, prices_train, type="response")
+pred
+levels(prices_train$status)
+
+pred_values <- ifelse(pred > 0.5, "Increased", "Decreased")
+head(pred_values)
+
+head(prices_train$status)
+
+meann <- mean(pred_values == prices_train$status, na.rm=TRUE)
+print("Accuracy")
+meann
+
+```
+
+
+```{r predicting values for testing data, echo=FALSE}
+status_predicted_values <- predict(predictivemodel, prices_test)
+status_predicted_values
+
+output <- ifelse(status_predicted_values>0, "Increased", "Decreased")
+output
+
+```
+
+```{r showing the output , echo=FALSE}
+#prices_test <- prices_test %>%
+#  select( date, symbol, status)
+#prices_test
+```
