@@ -1,0 +1,134 @@
+---
+title: "LSZTM_final"
+author: "Omair Shafi Ahmed"
+date: "11/27/2017"
+output: pdf_document
+---
+
+
+##Importing neccesary Libraries
+
+```{r}
+library('ggplot2')
+library('tidyverse')
+library('plyr')
+library('dplyr')
+library('caret')
+library('keras')
+library('abind')
+library('data.table')
+```
+
+
+
+## Define functions as needed
+
+```{r}
+
+create_horizontal_timeseries <- function(data_frame, col_name, time_steps){
+  
+    test <- list()
+    
+    for (i in 1:time_steps) {
+        shifted <- shift(data_frame[,col_name], (i), fill=NA)
+        test <- c(test, shifted)
+        #data_frame3 <- cbind(data_frame2, as.data.frame(shifted))
+        data_frame[paste(col_name, i)] <- test[[i]]
+      }
+    
+    data_frame <- na.omit(data_frame)
+    data_frame <- apply(data_frame, 2, function(x)(x-min(x))/(max(x)-min(x)))
+    data_frame
+
+  }
+
+
+
+create_cross_validation <- function(stock_vector){
+  
+
+    train_y <- stock_vector[1:as.numeric(0.67*nrow(stock_vector)),ncol(stock_vector)]
+    test_y  <- stock_vector[(0.67*nrow(stock_vector)):nrow(stock_vector), ncol(stock_vector)]
+    
+    train_x   <- stock_vector[1:as.numeric(0.67*nrow(stock_vector)),1:(ncol(stock_vector)-1)]
+    test_x    <- stock_vector[as.numeric(0.67*nrow(stock_vector)):nrow(stock_vector),
+                                                            1:(ncol(stock_vector)-1)]
+    
+    list(train_y, test_y, train_x, test_x)
+    
+}
+
+final_predictions <- setNames(data.frame(matrix(ncol = 3, nrow = 0)), c("ticker", "present_price", "future_price"))
+
+```
+
+
+##Loopong and fetching the right data
+
+```{r}
+
+prices <- read_csv('/Users/omairs/Documents/Masters/DS 5110/HW2/data/nyse/prices-split-adjusted.csv')
+
+for (ticker in unique(prices$symbol)){
+  
+  close_prices <- prices %>% filter(`symbol` == ticker) %>% select(`close`)
+  open_prices <- prices %>% filter(`symbol` == ticker) %>% select(`open`)
+  
+  stock_matrix_close <- create_horizontal_timeseries(close_prices, "close", 3)
+  stock_matrix_open <- create_horizontal_timeseries(open_prices, "open", 3)
+  
+  create_cross_validation_output_close <- create_cross_validation(stock_matrix_close)
+  create_cross_validation_output_open <- create_cross_validation(stock_matrix_open)
+  
+  train_y <- create_cross_validation_output_close[[1]]
+  test_y  <- create_cross_validation_output_close[[2]]
+  
+  close_train_x <- create_cross_validation_output_close[[3]]
+  close_test_x  <- create_cross_validation_output_close[[4]]
+  
+  open_train_x <- create_cross_validation_output_open[[3]]
+  open_test_x  <- create_cross_validation_output_open[[4]]
+  
+  
+  train_x <- abind(open_train_x, close_train_x, along=3)
+  test_x <- abind(open_test_x, close_test_x, along=3)
+  
+  model <- keras_model_sequential() 
+  model %>% layer_lstm (units = 8, return_sequences = TRUE, input_shape = c(3, 2)) %>%
+                          layer_flatten %>%
+                          layer_dense(units = 1, activation = 'sigmoid') %>% 
+                          compile(
+                              loss = 'mean_squared_error',
+                              optimizer = 'adam',
+                              metrics = c('accuracy')
+                              )
+    
+  model %>% fit(train_x, train_y, batch_size = 10, epochs = 100, validation_data = list(test_x, test_y))
+                
+  scaled_predictions      <- as.data.frame(predict(model, test_x))
+  scaled_predictions$epoch <- as.numeric(row.names(as.data.frame(predict(model, test_x))))
+  
+  actual_values           <- as.data.frame(test_y)
+  actual_values$epoch     <- as.numeric(row.names(actual_values))
+  
+  #scaled_predictions %>% ggplot() + geom_line(aes(y=`V1`, x=`epoch`), color='blue') +
+  #                                  geom_line(aes(y=`test_y`, x=`epoch`), color='red')
+  
+  
+  predictions <- as.data.frame(apply(as.data.frame(predict(model, test_x)), MARGIN = 2, FUN = function(x)
+                                  ((x * (max(close_prices) - min(close_prices))) + min(close_prices))))
+  
+  
+  predictions$actual <- apply(as.data.frame(test_y), MARGIN = 2, FUN = function(x)
+                              ((x * (max(close_prices) - min(close_prices))) + min(close_prices)))
+  
+  predictions$epoch <- as.numeric(row.names(predictions))
+  
+  names(predictions)[names(predictions) == 'V1'] <- "predicted"
+  
+  final_predictions <- rbind(final_predictions, c(ticker, 
+                              predictions[nrow(predictions),'predicted'], predictions[nrow(predictions),'actual']))
+  
+  }
+```
+
