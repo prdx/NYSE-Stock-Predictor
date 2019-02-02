@@ -33,4 +33,6 @@ To try it you can: `curl --data '{"a":4, "b":5}' http://localhost:8000/calculati
 # How to
 Docker build: `docker build .`
 Run the app: `Rscript R/app.R` 
-Run the test: From R console, you can run `testthat::test_dir("tests/testthat")`, assuming your working directory in the root folder of the project.
+Run the test: From R console, you can run `testthat::test_dir("tests/testthat")`, assuming your working directory in the root folder of the projects.
+
+
